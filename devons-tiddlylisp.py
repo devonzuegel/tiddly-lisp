@@ -53,65 +53,51 @@ isa        = isinstance
 def eval(x, env = global_env):
   if isa(x, Symbol):                      # variable reference
     return env.find(x)[x]
-
   elif not isa(x, list):                  # constant literal
     return x
-
   elif x[0] == 'quote' or x[0] == 'q':    # (quote exp) or (q exp)
     (_, exp) = x
     return exp
-
   elif x[0] == 'atom?':                   # (atom? exp)
     (_, exp) = x
     return not isa(eval(exp, env), list)
-
   elif x[0] == 'eq?':                     # (eq? exp1 exp2)
     (_, exp1, exp2) = x
     v1 = eval(exp1, env)
     v2 = eval(exp2, env)
     return (not isa(v1, list)) and (v1 == v2)
-
   elif x[0] == 'car':                     # (car exp)
     (_, exp) = x
     return eval(exp, env)[0]
-
   elif x[0] == 'cdr':                     # (cdr exp)
     (_, exp) = x
     return eval(exp, env)[1:]
-
   elif x[0] == 'cons':                    # (cons exp1 exp2)
     (_, exp1, exp2) = x
     mylist = [ eval(exp1, env) ]
     return mylist + eval(exp2, env)
-
   elif x[0] == 'cond':                    # (cond (p1 e1) ... (pn en))
     for (p, e) in x[1:]:
       if eval(p, env):
         return eval(e, env)
-
   elif x[0] == 'null?':                   # (null? exp)
     (_, exp) = x
     return eval(exp, env) == []
-
   elif x[0] == 'if':                      # (if test conseq alt)
     (_, test, conseq, alt) = x
     result = conseq if eval(test, env) else alt
     return eval(result, env)
-
   elif x[0] == 'set!':                    # (set! var exp)
     (_, var, exp) = x
     env.find(var)[var] = eval(exp, env)
-
   elif x[0] == 'define':                  # (define var exp)
     (_, var, exp) = x
     env[var] = eval(exp, env)
-
   elif x[0] == 'lambda':                  # (lambda (var*) exp)
     (_, vars, exp) = x
     return lambda *args: eval(exp, Env(vars, args, env))
     # Lambda expressions evaluate to the appropriate anonymous Python function, with a new
     # environment modified by the addition of the appropriate variable keys and their values.
-
   elif x[0] == 'begin':                   # (begin exp*)
     for exp in x[1:]:
       val = eval(exp, env)
@@ -120,6 +106,10 @@ def eval(x, env = global_env):
   else:                                   # (proc exp*)
     exps = [eval(exp, env) for exp in x]
     proc = exps.pop(0)
+    while len(exps) > 2:
+      val1, val2, rest = exps[0], exps[1], exps[2:]
+      new_first_val = proc(val1, val2)
+      exps = [new_first_val] + rest
     return proc(*exps)
 
 
