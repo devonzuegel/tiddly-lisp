@@ -138,9 +138,6 @@ def tokenize(s):
       str_so_far, open_parens = token, True
     else:
       result += [ token ]
-
-  print result
-
   return result
 
 

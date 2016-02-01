@@ -1,8 +1,8 @@
 (define sqrt (lambda (x) (sqrt-iter 1.0 x)))
-(define sqrt-iter 
-    (lambda (guess x) 
+(define sqrt-iter
+    (lambda (guess x)
       (if (good-enough? guess x) guess (sqrt-iter (improve guess x) x))))
-(define good-enough? 
+(define good-enough?
     (lambda (guess x) (< (abs (- x (square guess))) 0.00001)))
 (define abs (lambda (x) (if (< 0 x) x (- 0 x))))
 (define square (lambda (x) (* x x)))
