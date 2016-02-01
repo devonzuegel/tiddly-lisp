@@ -106,6 +106,8 @@ def eval(x, env = global_env):
   else:                                   # (proc exp*)
     exps = [eval(exp, env) for exp in x]
     proc = exps.pop(0)
+    if len(exps) == 1:
+      exps = [0] + exps
     while len(exps) > 2:
       val1, val2, rest = exps[0], exps[1], exps[2:]
       new_first_val = proc(val1, val2)
