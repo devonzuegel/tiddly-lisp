@@ -91,6 +91,10 @@ def eval(x, env = global_env):
   elif x[0] == 'define':                  # (define var exp)
     (_, var, exp) = x
     env[var] = eval(exp, env)
+  elif x[0] == 'list':                    # (list exp exp ...)
+    (op, expressions) = x[0], x[1:]
+    evaluated = [ eval(expr) for expr in expressions ]
+    return [op] + evaluated
   elif x[0] == 'lambda':                  # (lambda (var*) exp)
     (_, vars, exp) = x
     return lambda *args: eval(exp, Env(vars, args, env))
@@ -138,8 +142,6 @@ def tokenize(s):
       str_so_far, open_parens = token, True
     else:
       result += [ token ]
-
-  print result
 
   return result
 
