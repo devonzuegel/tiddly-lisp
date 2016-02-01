@@ -1,6 +1,4 @@
-import sys
-import traceback
-
+import sys, re, traceback, operator
 
 
 #### Symbol, Env classes ###############################################################
@@ -25,7 +23,6 @@ class Env(dict):
 
 # Add some built-in procedures and variables to the environment.
 def add_globals(env):
-  import operator
   # NOTE: easy to add more built-in procedures to tiddlylisp.
   env.update({
     '+':  operator.add,
@@ -80,6 +77,7 @@ def eval(x, env = global_env):
     for (p, e) in x[1:]:
       if eval(p, env):
         return eval(e, env)
+    return []
   elif x[0] == 'null?':                   # (null? exp)
     (_, exp) = x
     return eval(exp, env) == []
@@ -106,7 +104,7 @@ def eval(x, env = global_env):
   else:                                   # (proc exp*)
     exps = [eval(exp, env) for exp in x]
     proc = exps.pop(0)
-    if len(exps) == 1:
+    if (len(exps) == 1) and (proc == operator.add or proc == operator.sub):
       exps = [0] + exps
     while len(exps) > 2:
       val1, val2, rest = exps[0], exps[1], exps[2:]
@@ -124,13 +122,27 @@ def parse(s):
 
 # Convert string into list of tokens.
 def tokenize(s):
-  replacements = {
-    '(': ' ( ',
-    ')': ' ) ',
-  }
+  replacements = {  '(':' ( ',  ')':' ) ' }
   for (orig, replcmt) in replacements.iteritems():
     s = s.replace(orig, replcmt)
-  return s.split()
+  tokens = s.split()
+  result = []
+  str_so_far, open_parens = '', False
+  for token in tokens:
+    if open_parens:
+      str_so_far += " %s" % token
+      if token[-1] == '"':
+        result += [ str_so_far ]
+        open_parens, str_so_far = False, ''
+    elif token[0] == '"':
+      str_so_far, open_parens = token, True
+    else:
+      result += [ token ]
+
+  print result
+
+  return result
+
 
 
 # Read an expression form a sequence of tokens.
